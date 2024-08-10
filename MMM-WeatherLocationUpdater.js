@@ -36,8 +36,16 @@ Module.register("MMM-WeatherLocationUpdater", {
             console.log("Found weather module");
             weatherModule[0].config.lat = latitude;
             weatherModule[0].config.lon = longitude;
-            weatherModule[0].updateDom(); // This will refresh the display with the new data
-            console.log("Refeshing DOM");
+            
+        // Force the weather module to fetch new data with the updated location
+            if (typeof weatherModule[0].updateWeather === "function") {
+                weatherModule[0].updateWeather();
+            } else if (typeof weatherModule[0].updateAvailable === "function") {
+                weatherModule[0].updateAvailable();
+            } else {
+                Log.error("Weather module does not have an update method.");
+                weatherModule[0].updateDom(0);
+            }
         } else {
             Log.error("Weather module not found");
         }
