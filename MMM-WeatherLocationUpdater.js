@@ -18,23 +18,18 @@ Module.register("MMM-WeatherLocationUpdater", {
     },
 
     updateGeoLocation: function() {
-        var url = `https://api.ip2location.io/?key=${this.config.apiKey}&format=json`;
+        this.sendSocketNotification("FETCH_GEOLOCATION", {
+            apiKey: this.config.apiKey
+        });
+    },
 
-        fetch(url)
-            .then(response => response.json())
-            .then(data => {
-                if (data.latitude && data.longitude) {
-                    this.sendNotification("GEOLOCATION_UPDATED", {
-                        latitude: data.latitude,
-                        longitude: data.longitude
-                    });
-                } else {
-                    Log.error("Failed to retrieve geolocation from IP");
-                }
-            })
-            .catch(error => {
-                Log.error("Error fetching geolocation: " + error.message);
+    socketNotificationReceived: function(notification, payload) {
+        if (notification === "GEOLOCATION_RESULT") {
+            this.sendNotification("GEOLOCATION_UPDATED", {
+                latitude: payload.latitude,
+                longitude: payload.longitude
             });
+        }
     },
 
     notificationReceived: function(notification, payload, sender) {
@@ -47,8 +42,8 @@ Module.register("MMM-WeatherLocationUpdater", {
         var weatherModule = MM.getModules().withClass(this.config.weatherModuleName);
         if (weatherModule.length > 0) {
             weatherModule[0].updateConfig({
-                lat: latitude,
-                lon: longitude
+                latitude: latitude,
+                longitude: longitude
             });
             weatherModule[0].start(); // Restart the weather module to apply new coordinates
         } else {
