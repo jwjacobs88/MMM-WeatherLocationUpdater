@@ -25,15 +25,6 @@ Module.register("MMM-WeatherLocationUpdater", {
 
     socketNotificationReceived: function(notification, payload) {
         if (notification === "GEOLOCATION_RESULT") {
-            this.sendNotification("GEOLOCATION_UPDATED", {
-                latitude: payload.latitude,
-                longitude: payload.longitude
-            });
-        }
-    },
-
-    notificationReceived: function(notification, payload, sender) {
-        if (notification === "GEOLOCATION_UPDATED") {
             this.updateWeatherModule(payload.latitude, payload.longitude);
         }
     },
@@ -41,11 +32,9 @@ Module.register("MMM-WeatherLocationUpdater", {
     updateWeatherModule: function(latitude, longitude) {
         var weatherModule = MM.getModules().withClass(this.config.weatherModuleName);
         if (weatherModule.length > 0) {
-            weatherModule[0].updateConfig({
-                lat: latitude,
-                lon: longitude
-            });
-            weatherModule[0].start(); // Restart the weather module to apply new coordinates
+            weatherModule[0].config.lat = latitude;
+            weatherModule[0].config.lon = longitude;
+            weatherModule[0].updateDom(); // This will refresh the display with the new data
         } else {
             Log.error("Weather module not found");
         }
