@@ -1,5 +1,5 @@
 const NodeHelper = require("node_helper");
-const request = require('request');
+const https = require('https');
 
 module.exports = NodeHelper.create({
     start: function() {
@@ -13,15 +13,28 @@ module.exports = NodeHelper.create({
     },
 
     getGeoLocation: function(apiKey) {
-        var url = `https://api.ip2location.io/?key=${apiKey}&format=json`;
+        const url = `https://api.ip2location.io/?key=${apiKey}&format=json`;
 
-        request(url, (error, response, body) => {
-            if (!error && response.statusCode == 200) {
-                var data = JSON.parse(body);
-                this.sendSocketNotification("GEOLOCATION_RESULT", data);
-            } else {
-                console.error("Failed to fetch geolocation: ", error);
-            }
+        https.get(url, (res) => {
+            let data = '';
+
+            // A chunk of data has been received.
+            res.on('data', (chunk) => {
+                data += chunk;
+            });
+
+            // The whole response has been received.
+            res.on('end', () => {
+                try {
+                    const geoData = JSON.parse(data);
+                    this.sendSocketNotification("GEOLOCATION_RESULT", geoData);
+                } catch (error) {
+                    console.error("Failed to parse geolocation data:", error);
+                }
+            });
+
+        }).on("error", (error) => {
+            console.error("Error fetching geolocation:", error);
         });
     }
 });

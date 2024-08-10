@@ -42,8 +42,8 @@ Module.register("MMM-WeatherLocationUpdater", {
         var weatherModule = MM.getModules().withClass(this.config.weatherModuleName);
         if (weatherModule.length > 0) {
             weatherModule[0].updateConfig({
-                latitude: latitude,
-                longitude: longitude
+                lat: latitude,
+                lon: longitude
             });
             weatherModule[0].start(); // Restart the weather module to apply new coordinates
         } else {
