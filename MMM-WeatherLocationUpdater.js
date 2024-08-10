@@ -2,7 +2,7 @@ Module.register("MMM-WeatherLocationUpdater", {
     defaults: {
         updateInterval: 10 * 60 * 1000, // 10 minutes
         weatherModuleName: "weather", // Name of the weather module to update
-        ip2location_api_key: "",
+        apiKey: "",
     },
 
     start: function() {
@@ -18,21 +18,23 @@ Module.register("MMM-WeatherLocationUpdater", {
     },
 
     updateGeoLocation: function() {
-        if ("geolocation" in navigator) {
-            navigator.geolocation.getCurrentPosition(
-                position => {
+        var url = `https://api.ip2location.io/?key=${this.config.apiKey}&format=json`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                if (data.latitude && data.longitude) {
                     this.sendNotification("GEOLOCATION_UPDATED", {
-                        latitude: position.coords.latitude,
-                        longitude: position.coords.longitude
+                        latitude: data.latitude,
+                        longitude: data.longitude
                     });
-                },
-                error => {
-                    Log.error("Geolocation error: " + error.message);
+                } else {
+                    Log.error("Failed to retrieve geolocation from IP");
                 }
-            );
-        } else {
-            Log.error("Geolocation is not available");
-        }
+            })
+            .catch(error => {
+                Log.error("Error fetching geolocation: " + error.message);
+            });
     },
 
     notificationReceived: function(notification, payload, sender) {
