@@ -34,12 +34,12 @@ Module.register("MMM-WeatherLocationUpdater", {
         var weatherModule = MM.getModules().withClass(this.config.weatherModuleName);
         if (weatherModule.length > 0) {
             console.log("Found weather module");
-            weatherModule[0].config.lat = latitude;
-            weatherModule[0].config.lon = longitude;
+            weatherModule[0].weatherProvider.config.lat = latitude;
+            weatherModule[0].weatherProvider.config.lon = longitude;
             
         // Force the weather module to fetch new data with the updated location
-            if (typeof weatherModule[0].updateWeather === "function") {
-                weatherModule[0].updateWeather();
+            if (typeof weatherModule[0].weatherProvider.fetchCurrentWeather === "function") {
+                weatherModule[0].weatherProvider.fetchCurrentWeather();
             } else if (typeof weatherModule[0].updateAvailable === "function") {
                 weatherModule[0].updateAvailable();
             } else {
